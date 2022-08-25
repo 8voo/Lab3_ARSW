@@ -1,123 +1,106 @@
 
-### Escuela Colombiana de Ingeniería
-### Arquitecturas de Software - ARSW
-### Enrique Gonzales
-### Sergio Otero
-## Ejercicio Introducción al paralelismo - Hilos - Caso BlackListSearch
+## Escuela Colombiana de Ingeniería
+### Arquitecturas de Software – ARSW
 
 
-### Dependencias:
-####   Lecturas:
-*  [Threads in Java](http://beginnersbook.com/2013/03/java-threads/)  (Hasta 'Ending Threads')
-*  [Threads vs Processes]( http://cs-fundamentals.com/tech-interview/java/differences-between-thread-and-process-in-java.php)
+#### Ejercicio – programación concurrente, condiciones de carrera y sincronización de hilos. EJERCICIO INDIVIDUAL O EN PAREJAS.
 
-### Descripción
-  Este ejercicio contiene una introducción a la programación con hilos en Java, además de la aplicación a un caso concreto.
-  
+##### Parte I – Antes de terminar la clase.
 
-**Parte I - Introducción a Hilos en Java**
+Control de hilos con wait/notify. Productor/consumidor.
 
-1. De acuerdo con lo revisado en las lecturas, complete las clases CountThread, para que las mismas definan el ciclo de vida de un hilo que imprima por pantalla los números entre A y B.
-2. Complete el método __main__ de la clase CountMainThreads para que:
-    1. Cree 3 hilos de tipo CountThread, asignándole al primero el intervalo [0..99], al segundo [99..199], y al tercero [200..299].
-    2. Inicie los tres hilos con 'start()'.
-    3. Ejecute y revise la salida por pantalla. 
-    4. Cambie el incio con 'start()' por 'run()'. Cómo cambia la salida?, por qué?.
-   - Cuando usamos Start(), las funciones corren al tiempo, por lo tanto, los output salen en un orden distinto al esperado. 
-   ![image](https://user-images.githubusercontent.com/98104282/185035283-5bf87237-f5b6-4380-a06e-e992f211ee33.png)
+1. Revise el funcionamiento del programa y ejecútelo. Mientras esto ocurren, ejecute jVisualVM y revise el consumo de CPU del proceso correspondiente. A qué se debe este consumo?, cual es la clase responsable?
+- ![image](https://user-images.githubusercontent.com/98104282/186670303-e710a6a9-1fb4-4af8-a822-bb51a3519588.png)
+- Cando se corre el programa se tiene un alto consumo de recursos de la CPU, la clase responsable es el consumer ya que revisa todo el tiempo la lista incuso si esta vacia
+
+2. Haga los ajustes necesarios para que la solución use más eficientemente la CPU, teniendo en cuenta que -por ahora- la producción es lenta y el consumo es rápido. Verifique con JVisualVM que el consumo de CPU se reduzca.
+- El ajuste que se debe realizar es ponerle el mismo sleep al consumer que tenia el producer para que se produzca a la misma velocidad que se consume.
+
+3. Haga que ahora el productor produzca muy rápido, y el consumidor consuma lento. Teniendo en cuenta que el productor conoce un límite de Stock (cuantos elementos debería tener, a lo sumo en la cola), haga que dicho límite se respete. Revise el API de la colección usada como cola para ver cómo garantizar que dicho límite no se supere. Verifique que, al poner un límite pequeño para el 'stock', no haya consumo alto de CPU ni errores.
+
+- Para esto se realizo un condicional en el producer que cuando la longitud de la cola sea igual o mayor al limite maximo del stock no siga añadiendo productos
 
 
-   - Mientras que con run() se corren todos en el orden dado.
-   ![image](https://user-images.githubusercontent.com/98104282/185035481-bd4408ac-7b2a-4b1f-869a-54e686ed42eb.png)
+##### Parte II. – Antes de terminar la clase.
+
+Teniendo en cuenta los conceptos vistos de condición de carrera y sincronización, haga una nueva versión -más eficiente- del ejercicio anterior (el buscador de listas negras). En la versión actual, cada hilo se encarga de revisar el host en la totalidad del subconjunto de servidores que le corresponde, de manera que en conjunto se están explorando la totalidad de servidores. Teniendo esto en cuenta, haga que:
+
+- La búsqueda distribuida se detenga (deje de buscar en las listas negras restantes) y retorne la respuesta apenas, en su conjunto, los hilos hayan detectado el número de ocurrencias requerido que determina si un host es confiable o no (_BLACK_LIST_ALARM_COUNT_).
+- Lo anterior, garantizando que no se den condiciones de carrera.
+
+##### Parte III. – Avance para el martes, antes de clase.
+
+Sincronización y Dead-Locks.
+
+![](http://files.explosm.net/comics/Matt/Bummed-forever.png)
+
+1. Revise el programa “highlander-simulator”, dispuesto en el paquete edu.eci.arsw.highlandersim. Este es un juego en el que:
+
+	* Se tienen N jugadores inmortales.
+	* Cada jugador conoce a los N-1 jugador restantes.
+	* Cada jugador, permanentemente, ataca a algún otro inmortal. El que primero ataca le resta M puntos de vida a su contrincante, y aumenta en esta misma cantidad sus propios puntos de vida.
+	* El juego podría nunca tener un único ganador. Lo más probable es que al final sólo queden dos, peleando indefinidamente quitando y sumando puntos de vida.
+
+2. Revise el código e identifique cómo se implemento la funcionalidad antes indicada. Dada la intención del juego, un invariante debería ser que la sumatoria de los puntos de vida de todos los jugadores siempre sea el mismo(claro está, en un instante de tiempo en el que no esté en proceso una operación de incremento/reducción de tiempo). Para este caso, para N jugadores, cual debería ser este valor?.
+
+3. Ejecute la aplicación y verifique cómo funcionan las opción ‘pause and check’. Se cumple el invariante?.
+
+4. Una primera hipótesis para que se presente la condición de carrera para dicha función (pause and check), es que el programa consulta la lista cuyos valores va a imprimir, a la vez que otros hilos modifican sus valores. Para corregir esto, haga lo que sea necesario para que efectivamente, antes de imprimir los resultados actuales, se pausen todos los demás hilos. Adicionalmente, implemente la opción ‘resume’.
+
+5. Verifique nuevamente el funcionamiento (haga clic muchas veces en el botón). Se cumple o no el invariante?.
+
+6. Identifique posibles regiones críticas en lo que respecta a la pelea de los inmortales. Implemente una estrategia de bloqueo que evite las condiciones de carrera. Recuerde que si usted requiere usar dos o más ‘locks’ simultáneamente, puede usar bloques sincronizados anidados:
+
+	```java
+	synchronized(locka){
+		synchronized(lockb){
+			…
+		}
+	}
+	```
+
+7. Tras implementar su estrategia, ponga a correr su programa, y ponga atención a si éste se llega a detener. Si es así, use los programas jps y jstack para identificar por qué el programa se detuvo.
+
+8. Plantee una estrategia para corregir el problema antes identificado (puede revisar de nuevo las páginas 206 y 207 de _Java Concurrency in Practice_).
+
+9. Una vez corregido el problema, rectifique que el programa siga funcionando de manera consistente cuando se ejecutan 100, 1000 o 10000 inmortales. Si en estos casos grandes se empieza a incumplir de nuevo el invariante, debe analizar lo realizado en el paso 4.
+
+10. Un elemento molesto para la simulación es que en cierto punto de la misma hay pocos 'inmortales' vivos realizando peleas fallidas con 'inmortales' ya muertos. Es necesario ir suprimiendo los inmortales muertos de la simulación a medida que van muriendo. Para esto:
+	* Analizando el esquema de funcionamiento de la simulación, esto podría crear una condición de carrera? Implemente la funcionalidad, ejecute la simulación y observe qué problema se presenta cuando hay muchos 'inmortales' en la misma. Escriba sus conclusiones al respecto en el archivo RESPUESTAS.txt.
+	* Corrija el problema anterior __SIN hacer uso de sincronización__, pues volver secuencial el acceso a la lista compartida de inmortales haría extremadamente lenta la simulación.
+
+11. Para finalizar, implemente la opción STOP.
+
+<!--
+### Criterios de evaluación
+
+1. Parte I.
+	* Funcional: La simulación de producción/consumidor se ejecuta eficientemente (sin esperas activas).
+
+2. Parte II. (Retomando el laboratorio 1)
+	* Se modificó el ejercicio anterior para que los hilos llevaran conjuntamente (compartido) el número de ocurrencias encontradas, y se finalizaran y retornaran el valor en cuanto dicho número de ocurrencias fuera el esperado.
+	* Se garantiza que no se den condiciones de carrera modificando el acceso concurrente al valor compartido (número de ocurrencias).
 
 
-**Parte II - Ejercicio Black List Search**
+2. Parte III.
+	* Diseño:
+		- Coordinación de hilos:
+			* Para pausar la pelea, se debe lograr que el hilo principal induzca a los otros a que se suspendan a sí mismos. Se debe también tener en cuenta que sólo se debe mostrar la sumatoria de los puntos de vida cuando se asegure que todos los hilos han sido suspendidos.
+			* Si para lo anterior se recorre a todo el conjunto de hilos para ver su estado, se evalúa como R, por ser muy ineficiente.
+			* Si para lo anterior los hilos manipulan un contador concurrentemente, pero lo hacen sin tener en cuenta que el incremento de un contador no es una operación atómica -es decir, que puede causar una condición de carrera- , se evalúa como R. En este caso se debería sincronizar el acceso, o usar tipos atómicos como AtomicInteger).
 
+		- Consistencia ante la concurrencia
+			* Para garantizar la consistencia en la pelea entre dos inmortales, se debe sincronizar el acceso a cualquier otra pelea que involucre a uno, al otro, o a los dos simultáneamente:
+			* En los bloques anidados de sincronización requeridos para lo anterior, se debe garantizar que si los mismos locks son usados en dos peleas simultánemante, éstos será usados en el mismo orden para evitar deadlocks.
+			* En caso de sincronizar el acceso a la pelea con un LOCK común, se evaluará como M, pues esto hace secuencial todas las peleas.
+			* La lista de inmortales debe reducirse en la medida que éstos mueran, pero esta operación debe realizarse SIN sincronización, sino haciendo uso de una colección concurrente (no bloqueante).
 
-Para un software de vigilancia automática de seguridad informática se está desarrollando un componente encargado de validar las direcciones IP en varios miles de listas negras (de host maliciosos) conocidas, y reportar aquellas que existan en al menos cinco de dichas listas. 
-
-Dicho componente está diseñado de acuerdo con el siguiente diagrama, donde:
-
-- HostBlackListsDataSourceFacade es una clase que ofrece una 'fachada' para realizar consultas en cualquiera de las N listas negras registradas (método 'isInBlacklistServer'), y que permite también hacer un reporte a una base de datos local de cuando una dirección IP se considera peligrosa. Esta clase NO ES MODIFICABLE, pero se sabe que es 'Thread-Safe'.
-
-- HostBlackListsValidator es una clase que ofrece el método 'checkHost', el cual, a través de la clase 'HostBlackListDataSourceFacade', valida en cada una de las listas negras un host determinado. En dicho método está considerada la política de que al encontrarse un HOST en al menos cinco listas negras, el mismo será registrado como 'no confiable', o como 'confiable' en caso contrario. Adicionalmente, retornará la lista de los números de las 'listas negras' en donde se encontró registrado el HOST.
-
-![](img/Model.png)
-
-Al usarse el módulo, la evidencia de que se hizo el registro como 'confiable' o 'no confiable' se dá por lo mensajes de LOGs:
-
-INFO: HOST 205.24.34.55 Reported as trustworthy
-
-INFO: HOST 205.24.34.55 Reported as NOT trustworthy
-
-
-Al programa de prueba provisto (Main), le toma sólo algunos segundos análizar y reportar la dirección provista (200.24.34.55), ya que la misma está registrada más de cinco veces en los primeros servidores, por lo que no requiere recorrerlos todos. Sin embargo, hacer la búsqueda en casos donde NO hay reportes, o donde los mismos están dispersos en las miles de listas negras, toma bastante tiempo.
-
-Éste, como cualquier método de búsqueda, puede verse como un problema [vergonzosamente paralelo](https://en.wikipedia.org/wiki/Embarrassingly_parallel), ya que no existen dependencias entre una partición del problema y otra.
-
-Para 'refactorizar' este código, y hacer que explote la capacidad multi-núcleo de la CPU del equipo, realice lo siguiente:
-
-1. Cree una clase de tipo Thread que represente el ciclo de vida de un hilo que haga la búsqueda de un segmento del conjunto de servidores disponibles. Agregue a dicha clase un método que permita 'preguntarle' a las instancias del mismo (los hilos) cuantas ocurrencias de servidores maliciosos ha encontrado o encontró.
-
-2. Agregue al método 'checkHost' un parámetro entero N, correspondiente al número de hilos entre los que se va a realizar la búsqueda (recuerde tener en cuenta si N es par o impar!). Modifique el código de este método para que divida el espacio de búsqueda entre las N partes indicadas, y paralelice la búsqueda a través de N hilos. Haga que dicha función espere hasta que los N hilos terminen de resolver su respectivo sub-problema, agregue las ocurrencias encontradas por cada hilo a la lista que retorna el método, y entonces calcule (sumando el total de ocurrencuas encontradas por cada hilo) si el número de ocurrencias es mayor o igual a _BLACK_LIST_ALARM_COUNT_. Si se da este caso, al final se DEBE reportar el host como confiable o no confiable, y mostrar el listado con los números de las listas negras respectivas. Para lograr este comportamiento de 'espera' revise el método [join](https://docs.oracle.com/javase/tutorial/essential/concurrency/join.html) del API de concurrencia de Java. Tenga también en cuenta:
-
-    * Dentro del método checkHost Se debe mantener el LOG que informa, antes de retornar el resultado, el número de listas negras revisadas VS. el número de listas negras total (línea 60). Se debe garantizar que dicha información sea verídica bajo el nuevo esquema de procesamiento en paralelo planteado.
-
-    * Se sabe que el HOST 202.24.34.55 está reportado en listas negras de una forma más dispersa, y que el host 212.24.24.55 NO está en ninguna lista negra.
-Dividir la cantidad de servidores entre N para saber el rango, el for se debe pasar al thread
-
-
-**Parte II.I Para discutir la próxima clase (NO para implementar aún)**
-
-La estrategia de paralelismo antes implementada es ineficiente en ciertos casos, pues la búsqueda se sigue realizando aún cuando los N hilos (en su conjunto) ya hayan encontrado el número mínimo de ocurrencias requeridas para reportar al servidor como malicioso. Cómo se podría modificar la implementación para minimizar el número de consultas en estos casos?, qué elemento nuevo traería esto al problema?
-
-**Parte III - Evaluación de Desempeño**
-
-A partir de lo anterior, implemente la siguiente secuencia de experimentos para realizar las validación de direcciones IP dispersas (por ejemplo 202.24.34.55), tomando los tiempos de ejecución de los mismos (asegúrese de hacerlos en la misma máquina):
-
-1. Un solo hilo.
-
-	![image](https://user-images.githubusercontent.com/98189066/185267116-dcb033d7-3472-4f51-b1e6-d7eb3a504526.png)
 	
-2. Tantos hilos como núcleos de procesamiento (haga que el programa determine esto haciendo uso del [API Runtime](https://docs.oracle.com/javase/7/docs/api/java/lang/Runtime.html)). (8 nucleos)
 
-	![image](https://user-images.githubusercontent.com/98189066/185271319-0e7ae837-3247-47ef-ae03-a10ea4b17d07.png)
+	* Funcionalidad:
+		* Se cumple con el invariante al usar la aplicación con 10, 100 o 1000 hilos.
+		* La aplicación puede reanudar y finalizar(stop) su ejecución.
+		
+		-->
 
-3. Tantos hilos como el doble de núcleos de procesamiento. (16 nucleos)
-
-	![image](https://user-images.githubusercontent.com/98189066/185271444-01ecf5be-4827-41a3-a63e-8bd785f4d77a.png)
-
-4. 50 hilos.
-
-	![image](https://user-images.githubusercontent.com/98189066/185271464-a9658e98-677e-4921-a973-144078c8b6cd.png)
-
-
-5. 100 hilos.
-
-	![image](https://user-images.githubusercontent.com/98189066/185271523-5d35abcd-1873-4656-9aa8-089116247301.png)
-
-
-Al iniciar el programa ejecute el monitor jVisualVM, y a medida que corran las pruebas, revise y anote el consumo de CPU y de memoria en cada caso. ![](img/jvisualvm.png)
-
-Con lo anterior, y con los tiempos de ejecución dados, haga una gráfica de tiempo de solución vs. número de hilos. Analice y plantee hipótesis con su compañero para las siguientes preguntas (puede tener en cuenta lo reportado por jVisualVM):
-
-![image](https://user-images.githubusercontent.com/98189066/185272214-aa50def4-be9b-4379-930d-a6458c5ec450.png)
-
-Como podemos ver en la grafica, el tiempo es menor a medida que se incrementa el numero de hilos. Esto debido a que se divide el rango de busqueda en los distintos hilos, reduciendo la carga que tiene cada uno de ellos. Sin embargo, hay un punto en el que el cambio no es tan significativo. Con esto podemos concluir que hay un punto en el que no es indispensable usar tal cantidad de hilos.
-
-**Parte IV - Ejercicio Black List Search**
-
-1. Según la [ley de Amdahls](https://www.pugetsystems.com/labs/articles/Estimating-CPU-Performance-using-Amdahls-Law-619/#WhatisAmdahlsLaw?):
-
-	![](img/ahmdahls.png), donde _S(n)_ es el mejoramiento teórico del desempeño, _P_ la fracción paralelizable del algoritmo, y _n_ el número de hilos, a mayor _n_, mayor debería ser dicha mejora. Por qué el mejor desempeño no se logra con los 500 hilos?, cómo se compara este desempeño cuando se usan 200?. 
-	
-	Debido a la ley de Amdahls, podemos confirmar la hipotesis dada anteriormente, en la cual se dice que no se aumenta el desempeño haciendo uso de mas hilos con menos frecuencia. Ya que hay un punto en el que depende de la propia capacidad del procesador
-
-2. Cómo se comporta la solución usando tantos hilos de procesamiento como núcleos comparado con el resultado de usar el doble de éste?.
-Cuando se usan tantos números de hilos como números de núcleos el tiempo es de 20s, cuando se  16 hilos es decir el doble de hilos por numero de núcleos el tiempo de ejecución baja a 10s, en este caso el trabajo se distribuye de una mejor manera y puede ser una buena opción para proyectos de mayor escala
-
-3. De acuerdo con lo anterior, si para este problema en lugar de 100 hilos en una sola CPU se pudiera usar 1 hilo en cada una de 100 máquinas hipotéticas, la ley de Amdahls se aplicaría mejor?. Si en lugar de esto se usaran c hilos en 100/c máquinas distribuidas (siendo c es el número de núcleos de dichas máquinas), se mejoraría?. Explique su respuesta.
-
-No mejoraria, pues si se usa solo un hilo en cada pc. Por lo tanto no se utiliza el 100% de la capacidad del procesador de la maquima. En cambio, si usamos los nucleos del procesador del computador, se estaria aprovechando al maximo la potencia del pc.
-
-
+<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />Este contenido hace parte del curso Arquitecturas de Software del programa de Ingeniería de Sistemas de la Escuela Colombiana de Ingeniería, y está licenciado como <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.
