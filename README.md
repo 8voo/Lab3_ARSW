@@ -1,3 +1,3 @@
 # Lab03_ARSW
-##Enrique Gonzales
-##Sergio Otero
+## Enrique Gonzales
+## Sergio Otero
