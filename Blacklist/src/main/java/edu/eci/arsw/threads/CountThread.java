@@ -5,6 +5,8 @@
  */
 package edu.eci.arsw.threads;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  *
  * @author hcadavid
@@ -19,12 +21,12 @@ public class CountThread extends Thread {
     @Override
     public void run(){
         for (int i = num1; i <= num2; i++){
-            System.out.println(i);
             try {
                 sleep(2);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
+
         }
     }
 

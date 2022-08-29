@@ -5,6 +5,7 @@ import edu.eci.arsw.spamkeywordsdatasource.HostBlacklistsDataSourceFacade;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class BusquedaThread extends Thread{
 
@@ -13,7 +14,7 @@ public class BusquedaThread extends Thread{
     private HostBlackListsValidator validator;
     private int ocurrencesCount=0;
 
-
+    private AtomicInteger quantBL;
 
     private int checkedListsCount=0;
     private int inicio;
@@ -21,10 +22,12 @@ public class BusquedaThread extends Thread{
 
     private LinkedList<Integer> blackListOcurrences=new LinkedList<>();
     private HostBlacklistsDataSourceFacade skds=HostBlacklistsDataSourceFacade.getInstance();
-    public BusquedaThread(String ip, int inicio, int fin){
+
+    public BusquedaThread(String ip, int inicio, int fin, AtomicInteger quantBL){
         this.ip = ip;
         this.inicio = inicio;
         this.fin = fin;
+        this.quantBL = quantBL;
     }
 
     public int getOcurrencesCount() {
@@ -38,11 +41,11 @@ public class BusquedaThread extends Thread{
     }
     @Override
     public void run(){
-        for (int i=inicio;i<fin && ocurrencesCount<BLACK_LIST_ALARM_COUNT;i++){
+        for (int i=inicio;i<fin && quantBL.get()<BLACK_LIST_ALARM_COUNT;i++){
             checkedListsCount++;
             if (skds.isInBlackListServer(i, ip)){
                 blackListOcurrences.add(i);
-                ocurrencesCount++;
+                quantBL.getAndAdd(1);
             }
         }
     }

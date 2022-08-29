@@ -11,6 +11,7 @@ import edu.eci.arsw.threads.BusquedaThread;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,6 +27,7 @@ public class HostBlackListsValidator {
     public LinkedList<Integer> getBlackListOcurrences(){
         return blackListOcurrences;
     }
+    private AtomicInteger quantBL = new AtomicInteger();
 
     /**
      * Check the given host's IP address in all the available black lists,
@@ -54,13 +56,13 @@ public class HostBlackListsValidator {
 
         for (int i = 0; i < N; i++) {
             fin += skds.getRegisteredServersCount() / N;
-            BusquedaThread thread = new BusquedaThread(ipaddress, inicio, fin);
+            BusquedaThread thread = new BusquedaThread(ipaddress, inicio, fin, quantBL);
             inicio = fin;
             listaThreads.add(thread);
             thread.start();
         }
         if(residuo > 0) {
-            BusquedaThread thread = new BusquedaThread(ipaddress, inicio, (inicio+residuo));
+            BusquedaThread thread = new BusquedaThread(ipaddress, inicio, (inicio+residuo), quantBL);
         }
 
 

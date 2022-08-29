@@ -5,6 +5,9 @@
  */
 package edu.eci.arsw.threads;
 
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  *
  * @author hcadavid

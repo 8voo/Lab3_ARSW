@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="PiDigits" />
         <module name="lab1_ARSW" />
+        <module name="Blacklist" />
       </profile>
     </annotationProcessing>
   </component>
