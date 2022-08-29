@@ -28,10 +28,6 @@ public class Producer extends Thread {
         this.stockLimit=stockLimit;
     }
 
-    public synchronized void deseperate(){
-        System.out.println("deseperado");
-        notify();
-    }
 
     @Override
     public void run() {
@@ -44,9 +40,9 @@ public class Producer extends Thread {
                 System.out.println("Producer added " + dataSeed);
                 queue.add(dataSeed);
             } else {
-                synchronized (this){
+                synchronized (queue){
                     try {
-                        wait();
+                        queue.wait();
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }

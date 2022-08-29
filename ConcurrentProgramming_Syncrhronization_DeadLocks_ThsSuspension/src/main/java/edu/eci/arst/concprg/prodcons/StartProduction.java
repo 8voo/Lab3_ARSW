@@ -34,16 +34,6 @@ public class StartProduction {
         }
 
         new Consumer(queue).start();
-        while(true){
-            if (queue.size() < 10){
-                prod.deseperate();
-            }
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(StartProduction.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
     }
     
 
