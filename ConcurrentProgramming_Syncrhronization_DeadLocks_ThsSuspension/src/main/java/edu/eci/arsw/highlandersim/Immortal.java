@@ -6,9 +6,9 @@ import java.util.Random;
 public class Immortal extends Thread {
 
     private ImmortalUpdateReportCallback updateCallback=null;
-    
+
     private int health;
-    
+
     private int defaultDamageValue;
 
     private final List<Immortal> immortalsPopulation;
@@ -16,6 +16,8 @@ public class Immortal extends Thread {
     private final String name;
 
     private final Random r = new Random(System.currentTimeMillis());
+
+    private boolean enPausa = false;
 
 
     public Immortal(String name, List<Immortal> immortalsPopulation, int health, int defaultDamageValue, ImmortalUpdateReportCallback ucb) {
@@ -28,8 +30,17 @@ public class Immortal extends Thread {
     }
 
     public void run() {
-
         while (true) {
+            if(enPausa){
+                try {
+                    synchronized (this){
+                        wait();
+                    }
+
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
             Immortal im;
 
             int myIndex = immortalsPopulation.indexOf(this);
@@ -79,6 +90,15 @@ public class Immortal extends Thread {
     public String toString() {
 
         return name + "[" + health + "]";
+    }
+
+    public void perate() throws InterruptedException {
+        enPausa = true;
+    }
+
+    public synchronized void deseperate(){
+        enPausa = false;
+        notifyAll();
     }
 
 }
