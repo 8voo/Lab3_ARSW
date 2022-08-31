@@ -65,7 +65,10 @@ public class ControlFrame extends JFrame {
 
         JToolBar toolBar = new JToolBar();
         contentPane.add(toolBar, BorderLayout.NORTH);
+        JButton btnResume = new JButton("Resume");
+        JLabel lblNumOfImmortals = new JLabel("num. of immortals:");
 
+        JButton btnPauseAndCheck = new JButton("Pause and check");
         final JButton btnStart = new JButton("Start");
         btnStart.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -79,12 +82,13 @@ public class ControlFrame extends JFrame {
                 }
 
                 btnStart.setEnabled(false);
+                btnResume.setEnabled(true);
+                btnPauseAndCheck.setEnabled(true);
 
             }
         });
         toolBar.add(btnStart);
 
-        JButton btnPauseAndCheck = new JButton("Pause and check");
         btnPauseAndCheck.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
@@ -111,7 +115,6 @@ public class ControlFrame extends JFrame {
         });
         toolBar.add(btnPauseAndCheck);
 
-        JButton btnResume = new JButton("Resume");
 
         btnResume.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -126,7 +129,6 @@ public class ControlFrame extends JFrame {
 
         toolBar.add(btnResume);
 
-        JLabel lblNumOfImmortals = new JLabel("num. of immortals:");
         toolBar.add(lblNumOfImmortals);
 
         numOfImmortals = new JTextField();
@@ -140,10 +142,13 @@ public class ControlFrame extends JFrame {
         btnStop.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 for (Immortal i: immortals){
-                    i.stop();
                     btnStart.setEnabled(true);
-
+                    btnResume.setEnabled(false);
+                    btnPauseAndCheck.setEnabled(false);
                 }
+                output = new JTextArea();
+                output.setEditable(false);
+                scrollPane.setViewportView(output);
             }
         });
 
