@@ -98,7 +98,6 @@ public class ControlFrame extends JFrame {
                         throw new RuntimeException(ex);
                     }
                 }
-                System.out.println("H");
                 int sum = 0;
                 for (Immortal im : immortals) {
                     sum += im.getHealth();
